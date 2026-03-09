@@ -1,5 +1,6 @@
-.trae/
 openspec/
+knowtest_ai/.trae/
+knowtest_ai/openspec/
 __pycache__/
 *.pyc
 *.pyo
