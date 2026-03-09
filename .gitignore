@@ -1,0 +1,8 @@
+.trae/
+openspec/
+__pycache__/
+*.pyc
+*.pyo
+.idea/
+*.iml
+.DS_Store
