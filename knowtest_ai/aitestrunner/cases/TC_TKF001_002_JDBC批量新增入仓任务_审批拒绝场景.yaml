@@ -1,0 +1,104 @@
+# ============================================================================
+# 测试用例: TC_TKF001_002_JDBC批量新增入仓任务_审批拒绝场景
+# 业务流程: TKF_001 - JDBC批量新增入仓任务
+# 业务规则: TKR_001, TKR_002, TKR_006
+# ============================================================================
+test_case_id: TC_TKF001_002
+test_name: JDBC批量新增入仓任务_审批拒绝_状态一致性验证
+business_flow: TKF_001
+priority: P1
+automation_level: L3
+
+test_intent:
+  description: |
+    验证批量新增入仓任务在审批拒绝后的系统表现
+    确保任务主表状态回滚至失败状态，且 BPM 流程记录同步更新
+
+  # ========== 前置条件：环境初始化（支持自适应数据库/实例） ==========
+  preconditions:
+    - intent: "动作1：物理表创建"
+      action: test_create_jdbc_table
+      params:
+        instruction: "在 cjjcommon 实例的 dataops_shitingjie 库下创建 1 张测试表"
+        default_instance: "cjjcommon"
+        default_db: "dataops_shitingjie"
+
+    - intent: "动作2：元数据完善"
+      action: metadata_complete
+      params:
+        instance_name: "${context.instance_name}"
+        db_name: "${context.db_name}"
+        tables: "${context.created_tables}"
+
+    - intent: "动作3：Excel 文件构造"
+      action: jdbc_warehouse_test
+      params:
+        instance_name: "${context.instance_name}"
+        db_name: "${context.db_name}"
+        tables: "${context.created_tables}"
+
+  # ========== 测试步骤 ==========
+  test_steps:
+    - intent: "步骤2：批量上传校验"
+      action: batch_upload_validate
+      params:
+        fileName: "batch_test_latest.xlsx"
+
+    - intent: "步骤3：确认校验结果 [TKR_001]"
+      action: query_batch_result
+      params:
+        taskId: "${context.taskId}"
+      assertions:
+        - intent: "物理验证：任务主表状态为 VALIDATE_SUCCESS"
+          action: assert_field_equals
+          params:
+            table: "dataops.dataops_batch_operation_task"
+            field: "task_status"
+            where: "id = ${context.taskId}"
+            expected: "VALIDATE_SUCCESS"
+
+    - intent: "步骤4：提交批量操作任务 [TKR_002]"
+      action: submit_batch_task
+      params:
+        taskId: "${context.taskId}"
+      assertions:
+        - intent: "验证符合 [TKR_002] 状态切换为 PENDING_APPROVAL"
+          action: assert_field_equals
+          params:
+            table: "dataops.dataops_batch_operation_task"
+            field: "task_status"
+            where: "id = ${context.taskId}"
+            expected: "PENDING_APPROVAL"
+
+    - intent: "步骤5：发送审批拒绝信号"
+      action: mq_sender
+      params:
+        taskId: "${context.taskId}"
+        instruction: "taskid=${context.taskId}发送审批拒绝的mq消息"
+
+    - intent: "步骤6：验证审批拒绝后的状态一致性 [TKR_006]"
+      wait: 30
+      poll_interval: 5
+      assertions:
+        - intent: "验证任务主表状态切换为 APPROVING_FAIL"
+          action: assert_field_equals
+          params:
+            table: "dataops.dataops_batch_operation_task"
+            field: "task_status"
+            where: "id = ${context.taskId}"
+            expected: "APPROVING_FAIL"
+
+        - intent: "验证 BPM 记录状态同步更新为 3 (已拒绝)"
+          action: assert_field_equals
+          params:
+            table: "dataops.dataops_bpm_record"
+            field: "status"
+            where: "process_instance_node_id='${context.taskId}' and process_key='bg_jdbc_rc_plxz_rw'"
+            expected: 3
+
+expected_result:
+  description: |
+    1. 前置动作顺利准备好环境并提交任务。
+    2. 模拟发送审批拒绝信号后，后端异步处理 BPM 信号。
+    3. 最终验证任务主表 [TKD_001] 状态为 APPROVING_FAIL。
+    4. 最终验证审批流水表 [TKD_010] 状态为 3。
