@@ -1,0 +1,125 @@
+# ============================================================================
+# 测试用例: TC_TKF001_001_JDBC批量新增入仓任务_全链路成功场景
+# 业务流程: TKF_001 - JDBC批量新增入仓任务
+# 业务规则: TKR_001, TKR_002, TKR_004, TKR_007
+# ============================================================================
+test_case_id: TC_TKF001_001
+test_name: JDBC批量新增入仓任务_全链路成功_环境自适应版
+business_flow: TKF_001
+priority: P0
+automation_level: L3
+
+test_intent:
+  description: |
+    JDBC批量新增入仓任务全链路成功场景测试
+    验证从物理表创建到任务发布成功的完整流程
+
+  # ========== 前置条件：环境初始化（支持自适应数据库/实例） ==========
+  preconditions:
+    - intent: "动作1：物理表创建"
+      action: test_create_jdbc_table
+      params:
+        instruction: "在 cjjcommon 实例的 dataops_shitingjie 库下创建 2 张测试表"
+        default_instance: "cjjcommon"
+        default_db: "dataops_shitingjie"
+
+    - intent: "动作2：元数据完善"
+      action: metadata_complete
+      params:
+        instance_name: "${context.instance_name}"
+        db_name: "${context.db_name}"
+        tables: "${context.created_tables}"
+
+    - intent: "动作3：Excel 文件构造"
+      action: jdbc_warehouse_test
+      params:
+        instance_name: "${context.instance_name}"
+        db_name: "${context.db_name}"
+        tables: "${context.created_tables}"
+
+  # ========== 测试步骤 ==========
+  test_steps:
+    - intent: "步骤2：批量上传校验"
+      action: batch_upload_validate
+      params:
+        fileName: "batch_test_latest.xlsx"
+
+    - intent: "步骤3：确认校验结果 [TKR_001]"
+      action: query_batch_result
+      params:
+        taskId: "${context.taskId}"
+      assertions:
+        - intent: "物理验证：任务主表状态为成功"
+          action: assert_field_equals
+          params:
+            table: "dataops.dataops_batch_operation_task"
+            field: "task_status"
+            where: "id = ${context.taskId}"
+            expected: "VALIDATE_SUCCESS"
+
+    - intent: "步骤4：提交批量操作任务 [TKR_002]"
+      action: submit_batch_task
+      params:
+        taskId: "${context.taskId}"
+      assertions:
+        - intent: "验证状态切换为 PENDING_APPROVAL"
+          action: assert_field_equals
+          params:
+            table: "dataops.dataops_batch_operation_task"
+            field: "task_status"
+            where: "id = ${context.taskId}"
+            expected: "PENDING_APPROVAL"
+
+    - intent: "步骤5：发送审批通过信号"
+      action: mq_sender
+      params:
+        taskId: "${context.taskId}"
+        instruction: "taskid=${context.taskId}发送审批通过的mq消息"
+
+    - intent: "步骤6.1：验证 BPM 联动符合 [TKR_004]"
+      wait: 10
+      poll_interval: 5
+      assertions:
+        - intent: "验证 BPM 记录状态为 4"
+          action: assert_field_equals
+          params:
+            table: "dataops.dataops_bpm_record"
+            field: "status"
+            where: "process_instance_node_id='${context.taskId}' and process_key='bg_jdbc_rc_plxz_rw'"
+            expected: 4
+
+    - intent: "步骤6.2: 结果全链路验证符合 [TKR_007]"
+      wait: 300
+      poll_interval: 50
+      assertions:
+        - intent: "验证任务最终状态为 SUCCESS"
+          action: assert_field_equals
+          params:
+            table: "dataops.dataops_batch_operation_task"
+            field: "task_status"
+            where: "id = ${context.taskId}"
+            expected: "SUCCESS"
+
+        - intent: "验证数据源-节点-调度-流程实例多表关联状态为 0（发布成功）"
+          action: assert_database_record
+          params:
+            table: >
+              dataops.dataops_extract_input_datasource_config_info ds
+              INNER JOIN dataops.dataops_extract_node_config_info node ON ds.id = node.extract_input_datasource_config_id
+              INNER JOIN dataops.dataops_task_schedule_config_info sch ON node.extract_schedule_config_id = sch.id
+              LEFT JOIN dataops.dataops_process_instance_info pi ON node.id = pi.process_business_id
+            field: "pi.status"
+            where: >
+              ds.table_name = '${context.created_tables[0]}'
+              AND ds.instance_name = '${context.instance_name}'
+              AND ds.db_name = '${context.db_name}'
+              AND ds.status = 0
+            expected: "0"
+
+
+expected_result:
+  description: |
+    1. 根据指令动态准备环境（默认或指定库）。
+    2. 任务状态从 VALIDATE_SUCCESS 流转至 PENDING_APPROVAL。
+    3. 模拟审批通过后，BPM 状态更新，作业状态进入发布阶段。
+    4. 目标数据库中的配置记录完整生成，符合全链路落库规则。

@@ -1,0 +1,77 @@
+# ============================================================================
+# 测试用例: TC_TKF002_001_JDBC批量新增入仓任务_取消上传场景
+# 业务流程: TKF_002 - JDBC批量新增入仓任务_取消上传工作流
+# 业务规则: TKR_001, TKR_005
+# ============================================================================
+test_case_id: TC_TKF002_001
+test_name: JDBC批量新增入仓任务_取消上传_校验成功后取消
+business_flow: TKF_002
+priority: P1
+automation_level: L3
+
+test_intent:
+  description: |
+    验证批量上传校验成功后，用户执行取消操作的系统表现
+    确保取消动作能正确清理数据库中的临时任务记录
+
+  # ========== 前置条件：环境初始化（支持自适应数据库/实例） ==========
+  preconditions:
+    - intent: "动作1：物理表创建"
+      action: test_create_jdbc_table
+      params:
+        instruction: "在 cjjcommon 实例的 dataops_shitingjie 库下创建 1 张测试表"
+        default_instance: "cjjcommon"
+        default_db: "dataops_shitingjie"
+
+    - intent: "动作2：元数据完善"
+      action: metadata_complete
+      params:
+        instance_name: "${context.instance_name}"
+        db_name: "${context.db_name}"
+        tables: "${context.created_tables}"
+
+    - intent: "动作3：Excel 文件构造"
+      action: jdbc_warehouse_test
+      params:
+        instance_name: "${context.instance_name}"
+        db_name: "${context.db_name}"
+        tables: "${context.created_tables}"
+
+  # ========== 测试步骤 ==========
+  test_steps:
+    - intent: "步骤2：批量上传校验"
+      action: batch_upload_validate
+      params:
+        fileName: "batch_test_latest.xlsx"
+
+    - intent: "步骤3：确认校验结果 [TKR_001]"
+      action: query_batch_result
+      params:
+        taskId: "${context.taskId}"
+      assertions:
+        - intent: "物理验证：任务主表状态为成功"
+          action: assert_field_equals
+          params:
+            table: "dataops.dataops_batch_operation_task"
+            field: "task_status"
+            where: "id = ${context.taskId}"
+            expected: "VALIDATE_SUCCESS"
+
+    - intent: "步骤4：执行取消上传操作"
+      action: cancel_batch_task
+      params:
+        taskId: "${context.taskId}"
+      assertions:
+        - intent: "验证符合 [TKR_005] 任务记录已从系统中清理"
+          action: assert_record_count
+          params:
+            table: "dataops.dataops_batch_operation_task"
+            where: "id = ${context.taskId}"
+            expected: 0
+
+expected_result:
+  description: |
+    1. 前置动作顺利准备好环境并上传测试文件。
+    2. 校验通过后，调用取消接口。
+    3. 最终验证数据库表 [TKD_001] 中已不存在该 taskId 的活跃记录。
+    4. 符合 TKR_005 任务取消清理逻辑。
