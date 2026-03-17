@@ -183,19 +183,19 @@ description: 快生成符合规范的测试表和测试数据，支持 MySQL、T
 
 **脚本路径**：
 ```
-/Users/wendy/PycharmProjects/cc_free_coder/test-table/scripts/index.py
+test-table/scripts/index.py
 ```
 
 **调用方式**：
 
 **方式 1：列出所有预配置环境**
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/test-table/scripts && python index.py list-envs
+cd test-table/scripts && python index.py list-envs
 ```
 
 **方式 2：生成 SQL（不执行到数据库）**
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/test-table/scripts && python index.py generate \
+cd test-table/scripts && python index.py generate \
   --tableName {表名} \
   --dataType {数据类型} \
   --rowCount {行数}
@@ -203,7 +203,7 @@ cd /Users/wendy/PycharmProjects/cc_free_coder/test-table/scripts && python index
 
 **方式 3：生成并执行到数据库**
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/test-table/scripts && python index.py generate \
+cd test-table/scripts && python index.py generate \
   --tableName {表名} \
   --dataType {数据类型} \
   --rowCount {行数} \
@@ -213,7 +213,7 @@ cd /Users/wendy/PycharmProjects/cc_free_coder/test-table/scripts && python index
 
 **方式 4：生成异常场景测试表（违反注释规范）**
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/test-table/scripts && python index.py generate \
+cd test-table/scripts && python index.py generate \
   --tableName {表名} \
   --rowCount {行数} \
   --invalidScenario {异常场景类型} \

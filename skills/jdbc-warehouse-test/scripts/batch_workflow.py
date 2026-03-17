@@ -119,8 +119,9 @@ def batch_workflow(
 
     # 获取脚本路径
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    test_table_script = "/Users/wendy/PycharmProjects/cc_free_coder/skills/test-table/scripts/index.py"
-    metadata_script = "/Users/wendy/PycharmProjects/cc_free_coder/skills/metadata-complete/scripts/index.py"
+    project_root = os.path.dirname(os.path.dirname(current_dir))
+    test_table_script = os.path.join(project_root, "test-table/scripts/index.py")
+    metadata_script = os.path.join(project_root, "metadata-complete/scripts/index.py")
     template_updater_script = os.path.join(current_dir, "template_updater.py")
 
     # 根据实例名映射环境名
@@ -224,7 +225,7 @@ def batch_workflow(
         print("\n后续步骤:")
         print("1. 上传测试:")
         print("   python batch_upload_validate.py \\")
-        print('     "/Users/wendy/PycharmProjects/cc_free_coder/JBDC入仓/BIZ_REQ_33706_001_批量入仓_新增任务/test_data/batch_test_latest.xlsx"')
+        print('     "test_excel/batch_test_latest.xlsx"')
         print()
         print("2. 查询结果:")
         print("   python batch_query_result.py <taskId>")

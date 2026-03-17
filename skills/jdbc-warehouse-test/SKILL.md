@@ -113,12 +113,12 @@ description: 生成符合 JDBC 批量入仓接口规范的 xlsx 测试文件，�
 
 **脚本路径**：
 ```
-/Users/wendy/PycharmProjects/cc_free_coder/skills/jdbc-warehouse-test/scripts/batch_workflow.py
+jdbc-warehouse-test/scripts/batch_workflow.py
 ```
 
 **调用命令**：
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/skills/jdbc-warehouse-test/scripts && \
+cd jdbc-warehouse-test/scripts && \
 python batch_workflow.py {实例名} {数据库名} \
   --count {表数量} \
   --prefix {表名前缀} \
@@ -156,12 +156,12 @@ python batch_workflow.py tidb-ares ares --count 2 --db-type tidb
 
 **脚本路径**：
 ```
-/Users/wendy/PycharmProjects/cc_free_coder/skills/jdbc-warehouse-test/scripts/template_updater.py
+jdbc-warehouse-test/scripts/template_updater.py
 ```
 
 **调用命令**：
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/skills/jdbc-warehouse-test/scripts && \
+cd jdbc-warehouse-test/scripts && \
 python template_updater.py {实例名} {数据库名} {表名1} [表名2] [表名3] \
   --db-type {数据库类型} \
   --extract-method {抽数方式} \
@@ -181,11 +181,11 @@ python template_updater.py cjjcommon dataops_shitingjie \
 #### 方式 3：基于已有表生成（传统）
 **脚本路径**：
 ```
-/Users/wendy/PycharmProjects/cc_free_coder/skills/jdbc-warehouse-test/scripts/index.py
+jdbc-warehouse-test/scripts/index.py
 ```
 
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/skills/jdbc-warehouse-test/scripts && \
+cd jdbc-warehouse-test/scripts && \
 python index.py generate \
   --database {数据库名} \
   --table {表名} \
@@ -194,7 +194,7 @@ python index.py generate \
 
 #### 方式 4：先造表再生成（集成模式，传统）
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/skills/jdbc-warehouse-test/scripts && \
+cd jdbc-warehouse-test/scripts && \
 python index.py generate \
   --sourceTable {源表名} \
   --env {环境名} \

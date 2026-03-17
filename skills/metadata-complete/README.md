@@ -85,7 +85,7 @@ MySQL 库表元数据完整性管理自动化工具，串联调用 GET 和 POST 
 适合需要集成到自动化流程中的场景。
 
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/skills/metadata-complete/scripts
+cd metadata-complete/scripts
 python index.py --instance cjjcommon --database dataops_shitingjie --table your_table
 ```
 
@@ -240,7 +240,7 @@ python index.py --instance cjjcommon --database dataops_shitingjie --table 0418b
 
 **注意**：测试前先进入 scripts 目录：
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/skills/metadata-complete/scripts
+cd metadata-complete/scripts
 ```
 
 ## 详细文档
@@ -253,7 +253,7 @@ cd /Users/wendy/PycharmProjects/cc_free_coder/skills/metadata-complete/scripts
 ### 接口调用链路
 
 ```
-skills/metadata-complete/
+metadata-complete/
     ↓
 scripts/index.py (Skill 入口)
     ↓

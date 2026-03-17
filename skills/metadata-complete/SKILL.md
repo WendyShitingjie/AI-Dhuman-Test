@@ -163,13 +163,13 @@ description: 自动化执行 MySQL 库表元数据完整性管理，串联调用
 
 **脚本路径**：
 ```
-/Users/wendy/PycharmProjects/cc_free_coder/skills/metadata-complete/scripts/index.py
+metadata-complete/scripts/index.py
 ```
 
 **调用方式**：
 
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/skills/metadata-complete/scripts && python index.py \
+cd metadata-complete/scripts && python index.py \
   --instance {实例名} \
   --database {数据库名} \
   --table {表名} \
@@ -188,7 +188,7 @@ cd /Users/wendy/PycharmProjects/cc_free_coder/skills/metadata-complete/scripts &
 
 **普通业务表**：
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/skills/metadata-complete/scripts && python index.py \
+cd metadata-complete/scripts && python index.py \
   --instance cjjcommon \
   --database dataops_shitingjie \
   --table user_info
@@ -196,7 +196,7 @@ cd /Users/wendy/PycharmProjects/cc_free_coder/skills/metadata-complete/scripts &
 
 **临时测试表（支持删除）**：
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/skills/metadata-complete/scripts && python index.py \
+cd metadata-complete/scripts && python index.py \
   --instance cjjcommon \
   --database dataops_shitingjie \
   --table temp_table \
@@ -205,7 +205,7 @@ cd /Users/wendy/PycharmProjects/cc_free_coder/skills/metadata-complete/scripts &
 
 **只读历史表（不支持更新）**：
 ```bash
-cd /Users/wendy/PycharmProjects/cc_free_coder/skills/metadata-complete/scripts && python index.py \
+cd metadata-complete/scripts && python index.py \
   --instance cjjcommon \
   --database dataops_shitingjie \
   --table history_table \

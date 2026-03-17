@@ -21,8 +21,8 @@
 import sys
 import os
 
-# 添加 metadata-complete 脚本路径
-sys.path.insert(0, '/cc_free_coder/skills/metadata-complete/scripts')
+# 添加当前脚本所在目录路径
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from metadata_complete import MetadataCompleteManager
 
